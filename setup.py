@@ -17,7 +17,7 @@ def get_requirements(file:str)->list[str]:
 setup(
     name='ML-Project-Template',
     version='0.0.1',
-    author='Your Name',
+    author='Abdul',
     author_email="",
     packages=find_packages(),
     install_requires=get_requirements("requirements.txt")

@@ -1,0 +1,1 @@
+# This file will contain the code to train the model. it will contain all the algorithms that will be used to train the model. It will also contain the code to evaluate the model.
