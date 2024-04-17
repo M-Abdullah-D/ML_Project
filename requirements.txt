@@ -3,4 +3,7 @@ numpy
 seaborn
 datetime
 matplotlib
--e .
+scikit-learn
+catboost
+xgboost
+# -e .
