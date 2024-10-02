@@ -8,6 +8,8 @@ from src.logger import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass as dataclass
+import time
+
 
 
 # Custom exception class for more specific error handling
@@ -21,6 +23,7 @@ class DataIngestionConfig:
     train_data_path: str = os.path.join("artifacts", "train.csv")
     test_data_path: str = os.path.join("artifacts", "test.csv")
     source_data_path: str = os.path.join("source", "data.csv")
+    test_size: float = 0.2
 
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
@@ -29,25 +32,24 @@ class DataIngestion:
     def import_data(self, data_path: str) -> pd.DataFrame:
         """Reads CSV data from a given file path."""
         logging.info(f"Importing data from {data_path}")
+        start_time = time.time()
         try:
             data = pd.read_csv(data_path)
-            logging.info(f"Successfully loaded data from {data_path}")
+            logging.info(f"Successfully loaded data from {data_path} with shape {data.shape} in {time.time() - start_time:.2f} seconds.")
             return data
         except Exception as e:
-            logging.error(f"Error in importing data from {data_path}")
-            raise DataIngestionError(f"Error in importing data from {data_path}: {str(e)}")
+            raise custom_exception(e, sys)
 
     def split_data(self, data: pd.DataFrame, test_size: float) -> tuple:
         """Splits data into training and testing sets."""
         logging.info("Splitting data into train and test sets")
         try:
             
-            train_data, test_data = train_test_split(data, test_size=0.2, random_state=42)
+            train_data, test_data = train_test_split(data, test_size=self.config.test_size, random_state=42)
             logging.info("Data splitting successful")
             return train_data, test_data
         except Exception as e:
-            logging.error("Error in splitting data")
-            raise DataIngestionError(f"Error in splitting data: {str(e)}")
+            raise custom_exception(e, sys)
 
     def run(self):
         """Main function to run the data ingestion process."""
@@ -56,7 +58,7 @@ class DataIngestion:
             data = self.import_data(self.config.source_data_path)
             
             # Step 2: Split the data into training and testing sets
-            train_data, test_data = self.split_data(data, test_size=0.2)
+            train_data, test_data = self.split_data(data, test_size=self.config.test_size)
             
             # Step 3: Save the training and testing data
             os.makedirs(os.path.dirname(self.config.train_data_path), exist_ok=True)
@@ -65,11 +67,11 @@ class DataIngestion:
             train_data.to_csv(self.config.train_data_path, index=False)
             logging.info(f"Saving testing data to {self.config.test_data_path}")
             test_data.to_csv(self.config.test_data_path, index=False)
-            
+            return self.config.train_data_path, self.config.test_data_path
             logging.info("Data ingestion completed successfully")
         except Exception as e:
-            logging.error("Error during data ingestion process")
-            raise DataIngestionError(f"Data ingestion process failed: {str(e)}")
+            raise custom_exception(e, sys)
+
 
 if __name__ == "__main__":
     # Define configuration paths
@@ -77,4 +79,8 @@ if __name__ == "__main__":
     
     # Create an instance of DataIngestion and run the process
     data_ingestion = DataIngestion(config)
-    data_ingestion.run()
+    train_data,test_data=data_ingestion.run()
+
+    from src.components.data_transformation import DataTransformationConfig, DataTransformation
+    data_transformation = DataTransformation(DataTransformationConfig())
+    data_transformation.initiate_data_transformation(train_data, test_data)
