@@ -11,11 +11,6 @@ from dataclasses import dataclass as dataclass
 import time
 
 
-
-# Custom exception class for more specific error handling
-class DataIngestionError(Exception):
-    pass
-
 # Configuration class for managing paths
 @dataclass
 class DataIngestionConfig:
@@ -40,13 +35,13 @@ class DataIngestion:
         except Exception as e:
             raise custom_exception(e, sys)
 
-    def split_data(self, data: pd.DataFrame, test_size: float) -> tuple:
+    def split_data(self, data: pd.DataFrame) -> tuple:
         """Splits data into training and testing sets."""
         logging.info("Splitting data into train and test sets")
         try:
             
             train_data, test_data = train_test_split(data, test_size=self.config.test_size, random_state=42)
-            logging.info("Data splitting successful")
+            logging.info(f"Split data into train ({train_data.shape}) and test ({test_data.shape}) sets.")
             return train_data, test_data
         except Exception as e:
             raise custom_exception(e, sys)
@@ -58,7 +53,7 @@ class DataIngestion:
             data = self.import_data(self.config.source_data_path)
             
             # Step 2: Split the data into training and testing sets
-            train_data, test_data = self.split_data(data, test_size=self.config.test_size)
+            train_data, test_data = self.split_data(data)
             
             # Step 3: Save the training and testing data
             os.makedirs(os.path.dirname(self.config.train_data_path), exist_ok=True)
@@ -82,7 +77,7 @@ if __name__ == "__main__":
     train_data,test_data=data_ingestion.run()
 
     from src.components.data_transformation import DataTransformationConfig, DataTransformation
-    data_transformation = DataTransformation(DataTransformationConfig())
+    data_transformation = DataTransformation(DataTransformationConfig(),target=input("Enter the target column name: "))
     train_arr,test_arr,_=data_transformation.initiate_data_transformation(train_data, test_data)
 
     from src.components.model_trainer import ModelTrainerConfig, ModelTrainer
