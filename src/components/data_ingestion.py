@@ -83,4 +83,8 @@ if __name__ == "__main__":
 
     from src.components.data_transformation import DataTransformationConfig, DataTransformation
     data_transformation = DataTransformation(DataTransformationConfig())
-    data_transformation.initiate_data_transformation(train_data, test_data)
+    train_arr,test_arr,_=data_transformation.initiate_data_transformation(train_data, test_data)
+
+    from src.components.model_trainer import ModelTrainerConfig, ModelTrainer
+    model_trainer = ModelTrainer(ModelTrainerConfig())
+    print(model_trainer.initiate_model_trainer(train_arr,test_arr))
