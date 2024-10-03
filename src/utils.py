@@ -22,6 +22,10 @@ def save_object(file_path, obj):
     
 
 def evaluate_model(Xt, yt, Xs, ys, models, params):
+    """
+    Evaluates multiple models using GridSearchCV to find the best hyperparameters.
+    Returns a report of R2 scores for each model.
+    """
     try:
         model_report = {}
         for model_name, model in models.items():
@@ -45,5 +49,13 @@ def evaluate_model(Xt, yt, Xs, ys, models, params):
             logging.info(f"{model_name} R2 Score: {test_model_score}")
         
         return model_report
+    except Exception as e:
+        raise custom_exception(e, sys)
+    
+def load_object(file_path):
+    try:
+        with open(file_path, "rb") as file_obj:
+            obj = dill.load(file_obj)
+        return obj
     except Exception as e:
         raise custom_exception(e, sys)
